@@ -1,8 +1,4 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+// schema.prisma
 
 generator client {
   provider = "prisma-client-js"
@@ -11,4 +7,84 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+model SubCategory {
+  sub_category_id Int      @id @default(autoincrement())
+  name            String
+  categories      Category[]
+}
+
+model Category {
+  category_id     Int          @id @default(autoincrement())
+  name            String
+  description     String?
+  sub_category_id Int
+  subCategory     SubCategory  @relation(fields: [sub_category_id], references: [sub_category_id])
+  festivals       Festival[]
+
+  @@index([sub_category_id])
+}
+
+model Festival {
+  festival_id     Int          @id @default(autoincrement())
+  name            String
+  website_url     String?
+  category_id     Int
+  category        Category     @relation(fields: [category_id], references: [category_id])
+  region          String?
+  department      String?
+  city            String?
+  postal_code     String?
+  latitude        Float?
+  longitude       Float?
+  street          String?
+  street_nb       String?
+  userRates       UserRate[]
+  totalRates      TotalRate[]
+  comments        Comment[]
+
+  @@index([category_id])
+}
+
+model User {
+  user_id    Int        @id @default(autoincrement())
+  username   String
+  email      String
+  userRates  UserRate[]
+  comments   Comment[]
+}
+
+model UserRate {
+  user_rate_id Int      @id @default(autoincrement())
+  festival_id  Int
+  festival     Festival @relation(fields: [festival_id], references: [festival_id])
+  user_id      Int
+  user         User     @relation(fields: [user_id], references: [user_id])
+  rate         Int
+
+  @@index([festival_id])
+  @@index([user_id])
+}
+
+model TotalRate {
+  total_rate_id Int      @id @default(autoincrement())
+  festival_id   Int
+  festival      Festival @relation(fields: [festival_id], references: [festival_id])
+  total_rate    Int?
+  total_reviews Int?
+
+  @@index([festival_id])
+}
+
+model Comment {
+  comment_id  Int      @id @default(autoincrement())
+  festival_id Int
+  festival    Festival @relation(fields: [festival_id], references: [festival_id])
+  user_id     Int
+  user        User     @relation(fields: [user_id], references: [user_id])
+  comment     String?
+
+  @@index([festival_id])
+  @@index([user_id])
 }
