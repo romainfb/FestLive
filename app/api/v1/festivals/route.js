@@ -1,24 +1,25 @@
 import { PrismaClient } from "@prisma/client";
 import { NextResponse } from "next/server";
+import rateLimitMiddleware from "@/utils/rateLimiter";
 
 const prisma = new PrismaClient();
 
-export async function GET(req) {
+async function getHandler(req) {
   try {
-    const searchParams = req.nextUrl.searchParams;
+    const { searchParams } = new URL(req.url);
 
     // Extraction des paramètres de pagination et de filtrage
-    const offset = parseInt(searchParams.get("offset")) || 0;
-    const limit = parseInt(searchParams.get("limit")) || 20;
-    const category = parseInt(searchParams.get("category")) || null;
-    const searchQuery = searchParams.get("search") || null;
+    const offset = parseInt(searchParams.get('offset')) || 0;
+    const limit = parseInt(searchParams.get('limit')) || 20;
+    const category = parseInt(searchParams.get('category')) || null;
+    const searchQuery = searchParams.get('search') || null;
 
     // Construction de la clause where pour les filtres
     const whereClause = {
       AND: [
         category ? { category_id: category } : {}, // Filtrer par catégorie si spécifiée
         searchQuery
-          ? {
+            ? {
               OR: [
                 {
                   category: {
@@ -29,7 +30,7 @@ export async function GET(req) {
                 { name: { contains: searchQuery, mode: "insensitive" } }, // Filtrer par nom de festival contenant searchQuery
               ],
             }
-          : {}, // Si aucune recherche, ne pas appliquer de filtres supplémentaires
+            : {}, // Si aucune recherche, ne pas appliquer de filtres supplémentaires
       ],
     };
 
@@ -61,6 +62,8 @@ export async function GET(req) {
     });
   } catch (error) {
     console.error(error);
-    return NextResponse.error();
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }
+
+export const GET = rateLimitMiddleware(getHandler);
