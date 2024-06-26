@@ -3,6 +3,7 @@ import { ValidationError } from "@/utils/errors";
 import rateLimitMiddleware from "@/utils/rateLimiter";
 import { PrismaClient } from "@prisma/client";
 import { NextResponse } from "next/server";
+import rateLimitMiddleware from "@/utils/rateLimiter";
 
 const prisma = new PrismaClient();
 
@@ -17,7 +18,7 @@ const prisma = new PrismaClient();
 
 async function getHandler(req) {
   try {
-    const searchParams = req.nextUrl.searchParams;
+    const { searchParams } = new URL(req.url);
 
     // Parse offset
     let offset = searchParams.has("offset")
@@ -51,7 +52,7 @@ async function getHandler(req) {
       AND: [
         categoryId ? { category_id: categoryId } : {}, // Filter by category if provided
         searchQuery
-          ? {
+            ? {
               OR: [
                 {
                   category: {
