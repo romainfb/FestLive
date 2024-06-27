@@ -3,8 +3,6 @@ import { ValidationError } from "@/utils/errors";
 import rateLimitMiddleware from "@/utils/rateLimiter";
 import { PrismaClient } from "@prisma/client";
 import { NextResponse } from "next/server";
-import rateLimitMiddleware from "@/utils/rateLimiter";
-
 const prisma = new PrismaClient();
 
 /**
