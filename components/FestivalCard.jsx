@@ -13,7 +13,7 @@ export default function FestivalCard({ festival }) {
       />
       <div className="p-4 md:p-6">
         <h3 className="text-xl md:text-2xl font-semibold text-gray-900 dark:text-gray-50">
-          Coachella Music Festival
+          {festival.name}
         </h3>
         <div className="flex items-center space-x-2 mt-2">
           <StarIcon className="w-5 h-5 text-yellow-500" />
@@ -24,14 +24,14 @@ export default function FestivalCard({ festival }) {
           <span className="text-gray-600 dark:text-gray-400 text-sm">4.5</span>
         </div>
         <p className="text-gray-600 dark:text-gray-400 mt-2 line-clamp-2">
-          Coachella is an annual music and arts festival held in Indio,
-          California. It is one of the most popular and well-known festivals in
-          the world, featuring a diverse lineup of musical acts, art
-          installations, and more.
+          {festival.category.name}
+        </p>
+        <p className="text-gray-600 dark:text-gray-400 mt-2 line-clamp-2">
+          {festival.city}
         </p>
         <div className="mt-4">
           <Link
-            href="#"
+            href={`/festival/${festival.id}`}
             className="inline-flex items-center justify-center px-4 py-2 bg-gray-900 text-white rounded-md hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-950 focus:ring-offset-2 dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200 dark:focus:ring-gray-300 dark:focus:ring-offset-gray-950"
             prefetch={false}
           >

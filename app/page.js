@@ -11,7 +11,7 @@ export default function Home() {
     });
   }, []);
 
-  async function getFestivals() {
+  async function getFestivals(limit, offset, category_id, search) {
     const response = await fetch("/api/v1/festivals");
     return await response.json();
   }
