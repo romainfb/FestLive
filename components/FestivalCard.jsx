@@ -1,11 +1,25 @@
 import StarIcon from "@/components/icons/StarIcon";
 import Link from "next/link";
+import { useEffect, useState } from "react";
+import Image from "next/image";
 
 export default function FestivalCard({ festival }) {
+  const [randomImage, setRandomImage] = useState(null);
+
+  useEffect(() => {
+    setRandomImage(randomIntFromInterval());
+  }, []);
+
+  function randomIntFromInterval(min, max) {
+    min = 1;
+    max = 9;
+    return Math.floor(Math.random() * (max - min + 1) + min);
+  }
+
   return (
-    <div className="bg-white dark:bg-gray-950 rounded-lg shadow-lg overflow-hidden">
-      <img
-        src="/placeholder.svg"
+    <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+      <Image
+        src={`/images/image${randomImage}.webp`}
         alt="Festival 1"
         width={300}
         height={200}
@@ -31,7 +45,7 @@ export default function FestivalCard({ festival }) {
         </p>
         <div className="mt-4">
           <Link
-            href={`/festival/${festival.id}`}
+            href={`/festival/${festival.festival_id}`}
             className="inline-flex items-center justify-center px-4 py-2 bg-gray-900 text-white rounded-md hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-950 focus:ring-offset-2 dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200 dark:focus:ring-gray-300 dark:focus:ring-offset-gray-950"
             prefetch={false}
           >

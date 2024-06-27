@@ -21,7 +21,7 @@ export function Header() {
         className="flex items-center justify-center"
         prefetch={false}
       >
-        <MountainIcon className="h-6 w-6" />
+        <MountainIcon className="h-6 w-6 fill-black" />
         <span className="sr-only">Acme Inc</span>
       </Link>
       <nav className="mx-auto flex w-full gap-4 sm:gap-6">
@@ -52,18 +52,24 @@ export function Header() {
               <span className="sr-only">Toggle user menu</span>
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-48">
+          <DropdownMenuContent
+            align="end"
+            className="w-48 bg-gray-50 text-black"
+          >
             <Link href={"/profile"}>
-              <DropdownMenuItem>
+              <DropdownMenuItem className={"cursor-pointer"}>
                 <UserIcon className="w-4 h-4 mr-2" />
                 Profile
               </DropdownMenuItem>
             </Link>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
-              <LogOutIcon className="w-4 h-4 mr-2" />
-              Logout
-            </DropdownMenuItem>
+
+            <Link href={"/login"}>
+              <DropdownMenuItem className={"cursor-pointer"}>
+                <LogOutIcon className="w-4 h-4 mr-2" />
+                Login
+              </DropdownMenuItem>
+            </Link>
           </DropdownMenuContent>
         </DropdownMenu>
       </nav>

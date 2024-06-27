@@ -12,19 +12,42 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import StarIcon from "@/components/icons/StarIcon";
+import { useParams } from "next/navigation";
+import { FestivalDetailSkeleton } from "@/components/SkeletonFestivalDetail";
 
-export default function Home() {
-  const [festival, setFestival] = useState([]);
+export default function FestivalDetail() {
+  const [festival, setFestival] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [randomImage, setRandomImage] = useState(null);
+
+  const { id } = useParams();
+
+  useEffect(() => {
+    setRandomImage(randomIntFromInterval());
+  }, []);
+
+  function randomIntFromInterval(min, max) {
+    min = 1;
+    max = 9;
+    return Math.floor(Math.random() * (max - min + 1) + min);
+  }
 
   useEffect(() => {
     getFestival().then((festival) => {
       setFestival(festival.data);
+      if (festival.data) {
+        setLoading(false);
+      }
     });
   }, []);
 
-  async function getFestival(limit, offset, category_id, search) {
-    const response = await fetch("/api/v1/festival");
+  async function getFestival() {
+    const response = await fetch(`/api/v1/festivals/${id}`);
     return await response.json();
+  }
+
+  if (loading) {
+    return <FestivalDetailSkeleton />;
   }
 
   return (
@@ -33,7 +56,7 @@ export default function Home() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div>
             <img
-              src="/placeholder.svg"
+              src={`/images/image${randomImage}.webp`}
               alt="Festival Image"
               width={600}
               height={400}
@@ -43,7 +66,7 @@ export default function Home() {
           <div className="space-y-6">
             <div>
               <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-50">
-                Coachella Music Festival
+                {festival.name}
               </h1>
               <div className="flex items-center space-x-2 mt-2">
                 <StarIcon className="w-5 h-5 text-yellow-500" />
@@ -58,7 +81,7 @@ export default function Home() {
             </div>
             <div>
               <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-50">
-                Description
+                {festival.city}, {festival.country}
               </h2>
               <p className="text-gray-600 dark:text-gray-400 mt-2">
                 Coachella is an annual music and arts festival held in Indio,
@@ -72,7 +95,7 @@ export default function Home() {
                 Category
               </h2>
               <p className="text-gray-600 dark:text-gray-400 mt-2">
-                Music Festival
+                {festival.category?.name}
               </p>
             </div>
             <div>
@@ -80,7 +103,7 @@ export default function Home() {
                 Subcategory
               </h2>
               <p className="text-gray-600 dark:text-gray-400 mt-2">
-                Arts and Culture
+                {festival.subcategory?.name}
               </p>
             </div>
           </div>
@@ -122,7 +145,7 @@ export default function Home() {
               <div className="flex items-center space-x-4">
                 <Avatar className="w-10 h-10">
                   <AvatarImage src="/placeholder-user.jpg" />
-                  <AvatarFallback>JD</AvatarFallback>
+                  <AvatarFallback>JS</AvatarFallback>
                 </Avatar>
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-50">

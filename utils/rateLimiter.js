@@ -5,7 +5,7 @@ const rateLimitMap = new Map();
 export default function rateLimitMiddleware(handler) {
   return async (req) => {
     const ip = req.headers.get("x-forwarded-for") || req.ip || "unknown";
-    const limit = 5; // Limiting requests to 5 per minute per IP
+    const limit = 100; // Limiting requests to 5 per minute per IP
     const windowMs = 60 * 1000; // 1 minute
 
     if (!rateLimitMap.has(ip)) {
@@ -28,7 +28,7 @@ export default function rateLimitMiddleware(handler) {
           status: "error",
           message: "Rate limit exceeded. Please try again later.",
         },
-        { status: 429 }
+        { status: 429 },
       );
     }
 

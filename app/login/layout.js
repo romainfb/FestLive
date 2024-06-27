@@ -1,7 +1,6 @@
 import { Inter } from "next/font/google";
-import "./globals.css";
+import "@/app/globals.css";
 import { ThemeProvider } from "next-themes";
-import { Header } from "@/components/Header";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -19,10 +18,7 @@ export default function RootLayout({ children }) {
           disableTransitionOnChange
           defaultTheme="light"
         >
-          <Header />
-          <div className="flex flex-col min-h-[100dvh] bg-gray-100 w-screen 2xl:px-24">
-            {children}
-          </div>
+          {children}
         </ThemeProvider>
       </body>
     </html>
