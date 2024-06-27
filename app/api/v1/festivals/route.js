@@ -1,23 +1,54 @@
+import { handleErrorResponse } from "@/utils/errorHandler";
+import { ValidationError } from "@/utils/errors";
+import rateLimitMiddleware from "@/utils/rateLimiter";
 import { PrismaClient } from "@prisma/client";
 import { NextResponse } from "next/server";
-import rateLimitMiddleware from "@/utils/rateLimiter";
-
 const prisma = new PrismaClient();
+
+/**
+ * API route for fetching festivals with pagination and filtering
+ *
+ * @param {Request} req - The incoming request object
+ * @returns {NextResponse} - The response object
+ *
+ * @example GET /api/v1/festivals?offset=0&limit=20&category=1&search=rock
+ */
 
 async function getHandler(req) {
   try {
     const { searchParams } = new URL(req.url);
 
-    // Extraction des paramètres de pagination et de filtrage
-    const offset = parseInt(searchParams.get('offset')) || 0;
-    const limit = parseInt(searchParams.get('limit')) || 20;
-    const category = parseInt(searchParams.get('category')) || null;
-    const searchQuery = searchParams.get('search') || null;
+    // Parse offset
+    let offset = searchParams.has("offset")
+      ? parseInt(searchParams.get("offset"))
+      : undefined;
+    if (offset !== undefined && (isNaN(offset) || offset < 0)) {
+      throw new ValidationError("Invalid offset parameter");
+    }
 
-    // Construction de la clause where pour les filtres
+    // Parse limit
+    let limit = searchParams.has("limit")
+      ? parseInt(searchParams.get("limit"))
+      : undefined;
+    if (limit !== undefined && (isNaN(limit) || limit <= 0)) {
+      throw new ValidationError("Invalid limit parameter");
+    }
+
+    // Validate and parse category
+    const category = searchParams.get("category");
+    let categoryId = null;
+    if (category) {
+      categoryId = parseInt(category);
+      if (isNaN(categoryId)) {
+        throw new ValidationError("Category must be a number");
+      }
+    }
+
+    const searchQuery = searchParams.get("search") || null;
+
     const whereClause = {
       AND: [
-        category ? { category_id: category } : {}, // Filtrer par catégorie si spécifiée
+        categoryId ? { category_id: categoryId } : {}, // Filter by category if provided
         searchQuery
             ? {
               OR: [
@@ -25,44 +56,39 @@ async function getHandler(req) {
                   category: {
                     name: { contains: searchQuery, mode: "insensitive" },
                   },
-                }, // Filtrer par nom de catégorie contenant searchQuery
-                { city: { contains: searchQuery, mode: "insensitive" } }, // Filtrer par ville contenant searchQuery
-                { name: { contains: searchQuery, mode: "insensitive" } }, // Filtrer par nom de festival contenant searchQuery
+                },
+                { city: { contains: searchQuery, mode: "insensitive" } },
+                { name: { contains: searchQuery, mode: "insensitive" } },
               ],
             }
-            : {}, // Si aucune recherche, ne pas appliquer de filtres supplémentaires
+          : {},
       ],
     };
 
-    // Récupération du nombre total de festivals
     const totalFestivals = await prisma.festival.count({
       where: whereClause,
     });
 
-    // Récupération des festivals avec pagination et informations sur la catégorie
     const festivals = await prisma.festival.findMany({
       where: whereClause,
-      skip: offset,
-      take: limit,
+      skip: offset !== undefined ? offset : 0,
+      take: limit !== undefined ? limit : 20,
       include: {
-        category: true, // Supposant qu'il y a une relation 'category' dans le modèle festival
+        category: true,
       },
     });
 
-    // Déconnexion de Prisma après utilisation
     await prisma.$disconnect();
 
-    // Retour de la réponse avec les données, le nombre total, et les paramètres de pagination
     return NextResponse.json({
       status: "success",
       nb_results: totalFestivals,
-      offset,
-      limit,
-      data: festivals,
+      offset: offset !== undefined ? offset : 0,
+      limit: limit !== undefined ? limit : 20,
+      data: festivals || [],
     });
   } catch (error) {
-    console.error(error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return handleErrorResponse(error);
   }
 }
 

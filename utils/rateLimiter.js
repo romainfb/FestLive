@@ -1,35 +1,39 @@
-import { NextResponse } from 'next/server';
+import { NextResponse } from "next/server";
 
 const rateLimitMap = new Map();
 
 export default function rateLimitMiddleware(handler) {
-    return async (req) => {
-        const ip = req.headers.get("x-forwarded-for") || req.ip || 'unknown';
-        const limit = 5; // Limiting requests to 5 per minute per IP
-        const windowMs = 60 * 1000; // 1 minute
+  return async (req) => {
+    const ip = req.headers.get("x-forwarded-for") || req.ip || "unknown";
+    const limit = 5; // Limiting requests to 5 per minute per IP
+    const windowMs = 60 * 1000; // 1 minute
 
-        if (!rateLimitMap.has(ip)) {
-            rateLimitMap.set(ip, {
-                count: 0,
-                lastReset: Date.now(),
-            });
-        }
+    if (!rateLimitMap.has(ip)) {
+      rateLimitMap.set(ip, {
+        count: 0,
+        lastReset: Date.now(),
+      });
+    }
 
-        const ipData = rateLimitMap.get(ip);
+    const ipData = rateLimitMap.get(ip);
 
-        if (Date.now() - ipData.lastReset > windowMs) {
-            ipData.count = 0;
-            ipData.lastReset = Date.now();
-        }
+    if (Date.now() - ipData.lastReset > windowMs) {
+      ipData.count = 0;
+      ipData.lastReset = Date.now();
+    }
 
-        if (ipData.count >= limit) {
-            return new NextResponse('Too Many Requests', { status: 429 });
-        }
+    if (ipData.count >= limit) {
+      return NextResponse.json(
+        {
+          status: "error",
+          message: "Rate limit exceeded. Please try again later.",
+        },
+        { status: 429 }
+      );
+    }
 
-        ipData.count += 1;
+    ipData.count += 1;
 
-        console.log(`IP: ${ip} --- Count: ${ipData.count}`);
-
-        return handler(req);
-    };
+    return handler(req);
+  };
 }
